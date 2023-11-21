@@ -1,14 +1,48 @@
-import { compactLocaleFormat } from "./data/compact.locale.format";
-
 type SupportedLocale = keyof typeof compactLocaleFormat;
 type Options = {
   notation: "standard" | "compact";
+};
+
+const compactLocaleFormat: {
+  [key in string]: { compactUnit: string; value: number }[];
+} = {};
+
+const setCompactLocaleFormatByLocale = (locale: string) => {
+  const numberFormat = new Intl.NumberFormat(locale, { notation: "compact" });
+
+  let num = 1;
+  let limit = 1000000;
+  let compactUnit = "";
+  let localeFormatAry = [];
+  while (true) {
+    num *= 10;
+    const formattedStr = numberFormat.format(num);
+
+    const compactUnitMatchAry = formattedStr.match(/[^,.\s\d]/g);
+    const digitMatchAry = formattedStr.match(/\d/g);
+
+    if (compactUnitMatchAry === null) continue;
+    if (digitMatchAry === null) break;
+    const newCompactUnit = compactUnitMatchAry.join("");
+    if (compactUnit === newCompactUnit) continue;
+    if (num === Infinity) break;
+    compactUnit = newCompactUnit;
+    localeFormatAry.push({
+      compactUnit,
+      value: num,
+    });
+    if (parseInt(digitMatchAry.join("")) > limit) break;
+  }
+  compactLocaleFormat[locale] = localeFormatAry;
 };
 
 const getCompactUnitValue = (
   formattedNumberStr: string,
   locale: SupportedLocale
 ) => {
+  if (!compactLocaleFormat[locale]) {
+    setCompactLocaleFormatByLocale(locale);
+  }
   const curCompactLocaleFormat = compactLocaleFormat[locale];
   const filteredList = curCompactLocaleFormat.filter(({ compactUnit }) => {
     return formattedNumberStr.includes(compactUnit);

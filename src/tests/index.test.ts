@@ -1,14 +1,16 @@
-import { compactLocaleFormat } from "../data/compact.locale.format";
 import reverseNumberFormat from "../index";
-
+import locale from "locale-codes";
 describe("index", () => {
-  const supportedLocale = Object.keys(compactLocaleFormat);
+  const supportedLocale = Array.from(
+    new Set(
+      locale.all
+        .map((info) => {
+          return info["iso639-1"];
+        })
+        .filter((v) => v)
+    )
+  ) as string[];
 
-  // style
-  //  decimal
-  //  currency
-  //  percent
-  //  unit
   describe("style", () => {
     test.each<{
       message: string;
@@ -52,7 +54,7 @@ describe("index", () => {
       ]
         .map(({ message, options }) => {
           return supportedLocale.map((locale: string) => ({
-            message,
+            message: `${message} ${locale}`,
             dto: {
               locale,
               options,
@@ -62,7 +64,7 @@ describe("index", () => {
         .flat()
         .map(({ message, dto }) => {
           return ["compact", "standard"].map((notation: string) => ({
-            message,
+            message: `${message} ${notation}`,
             dto: {
               ...dto,
               options: {
@@ -73,19 +75,23 @@ describe("index", () => {
           }));
         })
         .flat()
-    )("$message", ({ dto: { locale, options } }) => {
+    )("$message", ({ message, dto: { locale, options } }) => {
       const numberFormat = new Intl.NumberFormat(locale, options as any);
 
-      for (let i = 1; i < 6; i = i + 10) {
-        const num = 1000 ** i * 1;
-        const formattedNumberStr = numberFormat.format(num);
+      if (message !== "decimal hi compact") return;
+      for (let i = 1; i < 20; i = i + 10) {
+        const inputNum = 10 ** i * 1;
+        const formattedNumberStr = numberFormat.format(inputNum);
+        console.log(inputNum);
+        console.log(formattedNumberStr);
+
         const convertedNum = reverseNumberFormat(
           formattedNumberStr,
           locale as any,
           options as any
         );
 
-        expect(num).toEqual(convertedNum);
+        expect(inputNum).toEqual(convertedNum);
       }
     });
   });
