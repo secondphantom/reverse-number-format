@@ -37,6 +37,9 @@ export default function reverseNumberFormat(
   if (notation === "compact") {
     number *= getCompactUnitValue(formattedNumberStr, locale);
   }
+  if (formattedNumberStr.includes("%")) {
+    number /= 100;
+  }
 
   return number;
 }
