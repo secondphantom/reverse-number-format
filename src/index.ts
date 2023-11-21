@@ -1,8 +1,3 @@
-type SupportedLocale = keyof typeof compactLocaleFormat;
-type Options = {
-  notation: "standard" | "compact";
-};
-
 const compactLocaleFormat: {
   [key in string]: { compactUnit: string; value: number }[];
 } = {};
@@ -36,16 +31,13 @@ const setCompactLocaleFormatByLocale = (locale: string) => {
   compactLocaleFormat[locale] = localeFormatAry;
 };
 
-const getCompactUnitValue = (
-  formattedNumberStr: string,
-  locale: SupportedLocale
-) => {
+const getCompactUnitValue = (formattedNumberStr: string, locale: string) => {
   if (!compactLocaleFormat[locale]) {
     setCompactLocaleFormatByLocale(locale);
   }
   const curCompactLocaleFormat = compactLocaleFormat[locale];
   const filteredList = curCompactLocaleFormat.filter(({ compactUnit }) => {
-    return formattedNumberStr.includes(compactUnit);
+    return formattedNumberStr.toLowerCase().includes(compactUnit.toLowerCase());
   });
 
   if (filteredList.length === 0) {
@@ -57,8 +49,10 @@ const getCompactUnitValue = (
 
 export default function reverseNumberFormat(
   formattedNumberStr: string,
-  locale: SupportedLocale,
-  options?: Options
+  locale: string,
+  options?: {
+    notation: "standard" | "compact";
+  }
 ) {
   const { notation } = {
     notation: "standard",
