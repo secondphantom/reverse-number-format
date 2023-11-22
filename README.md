@@ -2,7 +2,7 @@
 You can convert `compact number` to `number`.
 ## Installation
 ```bash
-npm install reverse-number-format
+npm i @secondphantom/reverse-number-format
 ```
 ## Basic Usage
 ```ts
